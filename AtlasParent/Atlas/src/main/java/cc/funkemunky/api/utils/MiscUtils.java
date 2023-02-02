@@ -81,6 +81,8 @@ public class MiscUtils {
 
     static {
         switch (ProtocolVersion.getGameVersion()) {
+
+
             case v1_19: {
                 ticksField = MinecraftReflection.minecraftServer
                         .getFieldByName("S");
