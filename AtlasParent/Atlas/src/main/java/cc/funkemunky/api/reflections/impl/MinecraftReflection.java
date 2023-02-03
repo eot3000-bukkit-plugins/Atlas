@@ -215,13 +215,25 @@ public class MinecraftReflection {
         return getItemMethod.invoke(vanillaStack);
     }
 
-    private static final WrappedMethod getMobEffect = ProtocolVersion.getGameVersion().isAbove(ProtocolVersion.V1_9) ? Reflections.getNMSClass("MobEffectList").getMethod("fromId", int.class) : null;
+    private static final WrappedClass mel = Reflections.getNMSClass("MobEffectList");
+
+    private static final WrappedMethod getMobEffect =
+            ProtocolVersion.getGameVersion().isAbove(ProtocolVersion.V1_9)
+                    ? ProtocolVersion.getGameVersion().isAbove(ProtocolVersion.v1_18)
+                        ? mel.getMethod("a", int.class)
+                        : mel.getMethod("fromId", int.class)
+
+                    : null;
 
     public static <T> T getMobEffect(int effectId) {
         return getMobEffect.invoke(null, effectId);
     }
 
-    private static final WrappedMethod getMobEffectId = ProtocolVersion.getGameVersion().isAbove(ProtocolVersion.V1_9) ? Reflections.getNMSClass("MobEffectList").getMethod("getId") : null;
+    private static final WrappedMethod getMobEffectId = ProtocolVersion.getGameVersion().isAbove(ProtocolVersion.V1_9)
+            ? ProtocolVersion.getGameVersion().isAbove(ProtocolVersion.v1_18)
+                ? mel.getMethod("a", mel.getParent())
+                : mel.getMethod("getId")
+            : null;
     public static int getMobEffectId(Object effect) {
         return getMobEffectId.invoke(null, effect);
     }

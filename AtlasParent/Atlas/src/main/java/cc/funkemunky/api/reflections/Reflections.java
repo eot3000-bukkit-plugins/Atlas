@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 public class Reflections {
     private static final String craftBukkitString;
     private static final String netMinecraftServerString;
+    private static final String netMinecraftServerStringNew;
     private static MethodHandles.Lookup lookup = MethodHandles.lookup();
     private static Set<String> classNames;
 
@@ -44,14 +45,17 @@ public class Reflections {
         String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         craftBukkitString = "org.bukkit.craftbukkit." + version + ".";
         netMinecraftServerString = "net.minecraft.server." + version + ".";
+        netMinecraftServerStringNew = "net.minecraft.";
 
         Atlas.getInstance().alog(true, "Loading class names...");
         try {
             classNames = ClassScanner.scanFile2(null,
                     Class.forName("org.bukkit.craftbukkit.Main"))
-                    .stream().filter(s -> s.contains("net.minecraft.server"))
+                    .stream().filter(s -> s.contains("net.minecraft"))
                     .collect(Collectors.toSet());
         } catch(ClassNotFoundException e) {
+            e.printStackTrace();
+
             classNames = Collections.emptySet();
         }
     }
@@ -74,13 +78,19 @@ public class Reflections {
         try {
             return getClass(netMinecraftServerString + name);
         } catch(Throwable e) {
-            Pattern toTest = Pattern.compile("\\." + name.replace("$", ".") + "$");
-            for (String className : classNames) {
-                if(toTest.matcher(className).find()) {
-                    return getClass(className);
+            try {
+                return getClass(netMinecraftServerStringNew + name);
+            } catch(Throwable t) {
+                //t.printStackTrace();
+                Pattern toTest = Pattern.compile("\\." + name.replace("$", ".") + "$");
+                for (String className : classNames) {
+                    //System.out.println(className);
+                    if (toTest.matcher(className).find()) {
+                        return getClass(className);
+                    }
                 }
+                throw new ClassNotFoundException(name);
             }
-            throw new ClassNotFoundException(name);
         }
     }
 
